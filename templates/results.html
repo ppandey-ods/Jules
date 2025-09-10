@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organization Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Organization Results</h1>
+        <div class="logs">
+            {% for log in logs %}
+                <p>{{ log }}</p>
+            {% endfor %}
+        </div>
+        <a href="/">Go Back</a>
+    </div>
+</body>
+</html>
