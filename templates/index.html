@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photo Organizer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Photo Organizer</h1>
+        <form action="/organize" method="post">
+            <div class="form-group">
+                <label for="source_dir">Source Directory:</label>
+                <input type="text" id="source_dir" name="source_dir" required>
+            </div>
+            <div class="form-group">
+                <label for="dest_dir">Destination Directory:</label>
+                <input type="text" id="dest_dir" name="dest_dir" required>
+            </div>
+            <div class="form-group">
+                <label for="strategy">Organization Strategy:</label>
+                <select id="strategy" name="strategy">
+                    <option value="date">Date</option>
+                    <option value="location">Location</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Cloud Sync:</label>
+                <input type="checkbox" id="sync_google_drive" name="sync_google_drive" value="true">
+                <label for="sync_google_drive">Google Drive</label>
+                <input type="checkbox" id="sync_one_drive" name="sync_one_drive" value="true">
+                <label for="sync_one_drive">OneDrive</label>
+            </div>
+            <button type="submit">Organize Photos</button>
+        </form>
+    </div>
+</body>
+</html>
