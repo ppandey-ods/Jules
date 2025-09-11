@@ -1,13 +1,9 @@
 import os
-import re
 import shutil
 from datetime import datetime
 from typing import List
 from .image_discovery import discover_images
-from .exif_reader import read_exif_data, LOCATION_COORDINATES
-
-# Reverse mapping from coordinates to location name
-COORDINATES_TO_LOCATION = {v: k for k, v in LOCATION_COORDINATES.items()}
+from .exif_reader import read_exif_data
 
 def organize_photos(source_dir: str, dest_dir: str, strategy: str):
     """
@@ -46,17 +42,14 @@ def organize_photos(source_dir: str, dest_dir: str, strategy: str):
                 logs.append(f"Warning: No GPS info for {image_path}. Skipping.")
                 continue
 
-            filename = os.path.basename(image_path)
-            match = re.match(r"^([a-zA-Z]+)_", filename)
-            if match:
-                location_name = match.group(1)
-                if location_name != "no": # to exclude no_location
-                    target_subfolder = location_name
-                else:
-                    logs.append(f"Warning: Could not determine location for {image_path}. Skipping.")
-                    continue
-            else:
-                logs.append(f"Warning: Could not determine location for {image_path}. Skipping.")
+            try:
+                lat = gps_info['Latitude']
+                lon = gps_info['Longitude']
+                # Create a folder name from the coordinates, rounded to 2 decimal places.
+                # e.g., Lat_48.86_Lon_2.35
+                target_subfolder = f"Lat_{lat:.2f}_Lon_{lon:.2f}"
+            except (KeyError, TypeError):
+                logs.append(f"Warning: Could not read GPS coordinates for {image_path}. Skipping.")
                 continue
 
         else:
