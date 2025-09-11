@@ -1,14 +1,25 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 from photo_organizer.organizer import organize_photos
 from photo_organizer.cloud_sync import sync_to_google_drive, sync_to_one_drive
 import os
 import shutil
+import tkinter as tk
+from tkinter import filedialog
 
 app = Flask(__name__)
 
 @app.route('/')
 def index():
     return render_template('index.html')
+
+@app.route('/select-folder')
+def select_folder():
+    """Opens a native folder selection dialog."""
+    root = tk.Tk()
+    root.withdraw()  # Hide the main tkinter window
+    folder_path = filedialog.askdirectory(master=root)
+    root.destroy()
+    return jsonify({'path': folder_path})
 
 @app.route('/organize', methods=['POST'])
 def organize():

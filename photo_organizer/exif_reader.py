@@ -1,58 +1,62 @@
-import os
-import re
+import exifread
 from typing import Dict, Any, Optional
 
-# Mock GPS data for locations
-LOCATION_COORDINATES = {
-    "paris": (48.8566, 2.3522),
-    "london": (51.5074, -0.1278),
-    "tokyo": (35.6895, 139.6917),
-}
+def _dms_to_decimal(dms, ref):
+    """Converts DMS (degrees, minutes, seconds) from exifread to decimal degrees."""
+    degrees = dms[0].num / dms[0].den
+    minutes = dms[1].num / dms[1].den / 60.0
+    seconds = dms[2].num / dms[2].den / 3600.0
 
-def to_dms(decimal_degree):
-    """Converts decimal degrees to degrees, minutes, seconds."""
-    degrees = int(decimal_degree)
-    minutes = int((decimal_degree - degrees) * 60)
-    seconds = (decimal_degree - degrees - minutes / 60) * 3600
-    return degrees, minutes, seconds
+    decimal = degrees + minutes + seconds
+    if ref.values in ['S', 'W']:
+        decimal = -decimal
+    return decimal
 
 def read_exif_data(image_path: str) -> Optional[Dict[str, Any]]:
     """
-    Mocks reading EXIF data from an image file by parsing its filename.
-    Filename format is expected to be: {location}_{YYYY}_{MM}_{DD}_{n}.jpg
+    Reads EXIF data from an image file using the exifread library.
+
+    Returns a dictionary containing the date and GPS coordinates if available.
     """
-    filename = os.path.basename(image_path)
-    match = re.match(r"(\w+)_(\d{4})_(\d{2})_(\d{2})_?(\d*)\.jpg", filename)
+    try:
+        with open(image_path, 'rb') as f:
+            tags = exifread.process_file(f, details=False)
+    except Exception:
+        # Handle cases where the file cannot be opened or is not an image
+        return None
 
-    if not match:
-        # Handle the no_location case
-        match_no_loc = re.match(r"no_location_(\d{4})_(\d{2})_(\d{2})\.jpg", filename)
-        if not match_no_loc:
-            return None
+    if not tags:
+        return None
 
-        year, month, day = match_no_loc.groups()
-        return {
-            "DateTimeOriginal": f"{year}:{month}:{day} 12:00:00",
-            "GPSInfo": None
-        }
-
-    location, year, month, day, _ = match.groups()
-
-    exif_data = {
-        "DateTimeOriginal": f"{year}:{month}:{day} 12:00:00",
+    final_data = {
+        "DateTimeOriginal": None,
         "GPSInfo": None
     }
 
-    if location in LOCATION_COORDINATES:
-        lat, lon = LOCATION_COORDINATES[location]
-        lat_dms = to_dms(abs(lat))
-        lon_dms = to_dms(abs(lon))
+    # Extract Date
+    date_tag = tags.get('EXIF DateTimeOriginal')
+    if date_tag:
+        final_data['DateTimeOriginal'] = str(date_tag.values)
 
-        exif_data["GPSInfo"] = {
-            "GPSLatitudeRef": "N" if lat >= 0 else "S",
-            "GPSLatitude": lat_dms,
-            "GPSLongitudeRef": "E" if lon >= 0 else "W",
-            "GPSLongitude": lon_dms,
-        }
+    # Extract and process GPS Info
+    lat_tag = tags.get('GPS GPSLatitude')
+    lat_ref_tag = tags.get('GPS GPSLatitudeRef')
+    lon_tag = tags.get('GPS GPSLongitude')
+    lon_ref_tag = tags.get('GPS GPSLongitudeRef')
 
-    return exif_data
+    if lat_tag and lat_ref_tag and lon_tag and lon_ref_tag:
+        try:
+            latitude = _dms_to_decimal(lat_tag.values, lat_ref_tag)
+            longitude = _dms_to_decimal(lon_tag.values, lon_ref_tag)
+            final_data['GPSInfo'] = {
+                'Latitude': latitude,
+                'Longitude': longitude
+            }
+        except Exception:
+            # GPS data might be malformed
+            pass
+
+    if final_data['DateTimeOriginal'] or final_data['GPSInfo']:
+        return final_data
+
+    return None

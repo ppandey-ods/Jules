@@ -12,11 +12,17 @@
         <form action="/organize" method="post">
             <div class="form-group">
                 <label for="source_dir">Source Directory:</label>
-                <input type="text" id="source_dir" name="source_dir" required>
+                <div class="path-input">
+                    <input type="text" id="source_dir" name="source_dir" required>
+                    <button type="button" class="browse-btn" data-target="source_dir">Browse...</button>
+                </div>
             </div>
             <div class="form-group">
                 <label for="dest_dir">Destination Directory:</label>
-                <input type="text" id="dest_dir" name="dest_dir" required>
+                <div class="path-input">
+                    <input type="text" id="dest_dir" name="dest_dir" required>
+                    <button type="button" class="browse-btn" data-target="dest_dir">Browse...</button>
+                </div>
             </div>
             <div class="form-group">
                 <label for="strategy">Organization Strategy:</label>
@@ -35,5 +41,31 @@
             <button type="submit">Organize Photos</button>
         </form>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const browseButtons = document.querySelectorAll('.browse-btn');
+            browseButtons.forEach(button => {
+                button.addEventListener('click', async () => {
+                    try {
+                        // Show some feedback to the user
+                        button.textContent = 'Loading...';
+                        const response = await fetch('/select-folder');
+                        const data = await response.json();
+                        if (data.path) {
+                            const targetInputId = button.getAttribute('data-target');
+                            document.getElementById(targetInputId).value = data.path;
+                        }
+                    } catch (error) {
+                        console.error('Error fetching folder path:', error);
+                        alert('Could not open folder selection dialog. See console for details.');
+                    } finally {
+                        // Restore button text
+                        button.textContent = 'Browse...';
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

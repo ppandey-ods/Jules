@@ -37,6 +37,31 @@ h1 {
     border-radius: 4px;
 }
 
+.path-input {
+    display: flex;
+}
+
+.path-input input[type="text"] {
+    flex-grow: 1;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.browse-btn {
+    width: auto;
+    padding: 8px 12px;
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #ddd;
+    border-left: none;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+}
+
+.browse-btn:hover {
+    background-color: #e0e0e0;
+}
+
 button {
     display: block;
     width: 100%;
