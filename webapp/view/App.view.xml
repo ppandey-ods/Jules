@@ -1,0 +1,44 @@
+<mvc:View
+    controllerName="photo.organizer.controller.App"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m"
+    xmlns:l="sap.ui.layout"
+    displayBlock="true">
+    <App>
+        <pages>
+            <Page title="{i18n>appTitle}">
+                <content>
+                    <l:VerticalLayout
+                        class="sapUiContentPadding"
+                        width="100%">
+                        <l:content>
+                            <FileUploader
+                                id="fileUploader"
+                                name="myFileUpload"
+                                uploadUrl="/organize"
+                                tooltip="Upload your photos"
+                                multiple="true"
+                                placeholder="Choose your photos to organize..."
+                                style="Emphasized"
+                                fileType="jpg,png,jpeg"
+                                sendXHR="true"
+                                useMultipart="false"/>
+                            <Select id="strategy" width="100%">
+                                <items>
+                                    <core:Item key="date" text="Date" xmlns:core="sap.ui.core" />
+                                    <core:Item key="location" text="Location" xmlns:core="sap.ui.core" />
+                                </items>
+                            </Select>
+                            <CheckBox id="sync_google_drive" text="Sync to Google Drive" />
+                            <CheckBox id="sync_one_drive" text="Sync to OneDrive" />
+                            <Button
+                                text="Organize Photos"
+                                press=".onOrganizePress"
+                                type="Emphasized"/>
+                        </l:content>
+                    </l:VerticalLayout>
+                </content>
+            </Page>
+        </pages>
+    </App>
+</mvc:View>
